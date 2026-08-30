@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { getSupabaseBrowserClient } from "../lib/supabase/client";
 
 type View =
   | "Inicio"
@@ -201,6 +203,8 @@ export default function Home() {
   const [view, setView] = useState<View>("Inicio");
   const [adminOpen, setAdminOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [starred, setStarred] = useState<string[]>([]);
   const [qualifiers, setQualifiers] = useState(4);
@@ -214,6 +218,23 @@ export default function Home() {
     window.addEventListener("qualifiers-change", update);
     return () => window.removeEventListener("qualifiers-change", update);
   }, []);
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setAuthLoading(false);
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthUser(data.session?.user ?? null);
+      setAuthLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   const visiblePlayers = useMemo(
     () =>
       players.filter((p) =>
@@ -224,6 +245,24 @@ export default function Home() {
   const notify = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(""), 2600);
+  };
+  const handleGoogleAuth = async () => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      notify("Falta conectar Supabase en la configuración del sitio");
+      return;
+    }
+    if (authUser) {
+      await supabase.auth.signOut();
+      notify("Sesión cerrada");
+      return;
+    }
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${siteUrl.replace(/\/$/, "")}/` },
+    });
+    if (error) notify(`No fue posible iniciar sesión: ${error.message}`);
   };
 
   return (
@@ -236,7 +275,7 @@ export default function Home() {
         >
           <span className="brandBall">●</span>
           <span>
-            LA<strong>SUPERLIGA</strong>
+            <strong>LIGUITA</strong>
           </span>
         </button>
         <nav className="desktopNav" aria-label="Navegación principal">
@@ -259,9 +298,13 @@ export default function Home() {
           </button>
           <button
             className="login"
-            onClick={() => notify("Conecta Google para iniciar sesión")}
+            onClick={handleGoogleAuth}
+            disabled={authLoading}
+            title={authUser ? "Cerrar sesión" : "Iniciar sesión con Google"}
           >
-            G&nbsp;&nbsp; Iniciar sesión
+            {authUser
+              ? `● ${authUser.user_metadata?.full_name || authUser.email || "Mi cuenta"}`
+              : "G  Iniciar sesión"}
           </button>
           <button className="owner" onClick={() => setAdminOpen(true)}>
             Administrar torneo
@@ -3066,7 +3109,7 @@ function TournamentManager({ notify }: { notify: (s: string) => void }) {
             <div className="tournamentInfo">
               <small>{t.format}</small>
               <h3>{t.name}</h3>
-              <p>lasuperliga.com/{t.slug}</p>
+              <p>liguita.co/{t.slug}</p>
               <div>
                 <span>
                   📅 Inicia{" "}
@@ -3583,7 +3626,7 @@ function NewTournamentForm({
               </small>
             ) : (
               <small>
-                Enlace: lasuperliga.com/{slug || "nombre-del-torneo"}
+                Enlace: liguita.co/{slug || "nombre-del-torneo"}
               </small>
             )}
           </div>
