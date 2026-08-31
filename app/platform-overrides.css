@@ -1,0 +1,15 @@
+.ownerActions {
+  display: flex;
+  gap: 8px;
+}
+
+a.primaryBtn {
+  display: inline-block;
+  text-decoration: none;
+}
+
+@media (max-width: 520px) {
+  .ownerActions .outlineBtn:last-child {
+    display: none;
+  }
+}
