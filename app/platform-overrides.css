@@ -8,6 +8,104 @@ a.primaryBtn {
   text-decoration: none;
 }
 
+.authCard {
+  position: relative;
+  width: min(430px, 94vw);
+  padding: 34px;
+  border-radius: 14px;
+  background: #f8f6ef;
+  color: #173c34;
+}
+
+.authCard > img {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+}
+
+.authCard h2 {
+  margin: 4px 0 8px;
+  font: 800 38px "Barlow Condensed", sans-serif;
+  text-transform: uppercase;
+}
+
+.authCard > p:not(.sectionLabel) {
+  color: #65756f;
+  font-size: 13px;
+}
+
+.authCard label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 13px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.authCard input {
+  padding: 13px;
+  border: 1px solid #c9d1cc;
+  border-radius: 6px;
+  background: white;
+}
+
+.googleAuthBtn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px solid #c9d1cc;
+  border-radius: 6px;
+  background: white;
+  color: #173c34;
+  font-weight: 800;
+}
+
+.googleAuthBtn b {
+  margin-right: 9px;
+  color: #4285f4;
+  font-size: 17px;
+}
+
+.authDivider {
+  margin: 20px 0 5px;
+  border-top: 1px solid #d7ddd9;
+  text-align: center;
+}
+
+.authDivider span {
+  position: relative;
+  top: -9px;
+  padding: 0 10px;
+  background: #f8f6ef;
+  color: #7a8883;
+  font-size: 10px;
+}
+
+.authSwitch {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  background: transparent;
+  color: #07513f;
+  font-weight: 800;
+}
+
+.authMessage {
+  margin-top: 14px;
+  padding: 11px;
+  border-radius: 5px;
+  background: #e7eee9;
+  font-size: 12px;
+}
+
+.authCard > small {
+  display: block;
+  margin-top: 12px;
+  color: #74817d;
+  text-align: center;
+}
+
 @media (max-width: 520px) {
   .ownerActions .outlineBtn:last-child {
     display: none;
