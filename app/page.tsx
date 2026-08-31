@@ -416,7 +416,7 @@ export default function Home() {
         <div className="brand">
           <span className="brandBall">●</span>
           <span>
-            LA<strong>SUPERLIGA</strong>
+            <strong>LIGUITA</strong>
           </span>
         </div>
         <p>La plataforma del fútbol que se juega de verdad.</p>
@@ -846,7 +846,7 @@ function AdminModal({
           <div className="brand">
             <span className="brandBall">●</span>
             <span>
-              LA<strong>SUPERLIGA</strong>
+              <strong>LIGUITA</strong>
             </span>
           </div>
           <p>PANEL DEL ORGANIZADOR</p>
@@ -2613,7 +2613,7 @@ function TeamRegistrationFlow({
           <div className="brand">
             <span className="brandBall">●</span>
             <span>
-              LA<strong>SUPERLIGA</strong>
+              <strong>LIGUITA</strong>
             </span>
           </div>
           <p>
