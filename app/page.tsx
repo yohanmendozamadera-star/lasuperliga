@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase/client";
+import { PlatformLanding } from "./platform-landing";
+import { TournamentPortal } from "./tournament-portal";
 
 type View =
   | "Inicio"
@@ -200,6 +202,7 @@ function Crest({ code, small = false }: { code: string; small?: boolean }) {
 }
 
 export default function Home() {
+  const [portalMode, setPortalMode] = useState<{ type: "landing" } | { type: "tournament"; slug: string } | null>(null);
   const [view, setView] = useState<View>("Inicio");
   const [adminOpen, setAdminOpen] = useState(false);
   const [toast, setToast] = useState("");
@@ -212,6 +215,14 @@ export default function Home() {
     "Representante" | "Organizador" | null
   >(null);
   const [applications, setApplications] = useState<TeamApplication[]>([]);
+  useEffect(() => {
+    const host = window.location.hostname.toLowerCase();
+    if (host.endsWith(".liguita.co") && host !== "www.liguita.co") {
+      setPortalMode({ type: "tournament", slug: host.slice(0, -".liguita.co".length).split(".")[0] });
+    } else {
+      setPortalMode({ type: "landing" });
+    }
+  }, []);
   useEffect(() => {
     const update = (event: Event) =>
       setQualifiers((event as CustomEvent<number>).detail);
@@ -264,6 +275,12 @@ export default function Home() {
     });
     if (error) notify(`No fue posible iniciar sesión: ${error.message}`);
   };
+
+  if (!portalMode) {
+    return <main className="portalState"><img src="/liguita-logo-google-white.png" alt="Liguita" /><p>Cargando Liguita…</p></main>;
+  }
+  if (portalMode.type === "landing") return <PlatformLanding />;
+  if (portalMode.type === "tournament") return <TournamentPortal slug={portalMode.slug} />;
 
   return (
     <main>
