@@ -111,3 +111,35 @@ a.primaryBtn {
     display: none;
   }
 }
+
+.ownerDashboard { padding: 70px max(7vw, 30px); background: #eef1e9; }
+.ownerDashboard > div:first-child { display: inline-block; }
+.ownerDashboard > .primaryBtn { float: right; }
+.ownerDashboard h2 { margin: 5px 0 28px; font: 800 48px "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.leagueList { clear: both; display: grid; gap: 12px; }
+.leagueList article { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px; border: 1px solid #d8dfd9; border-radius: 9px; background: white; }
+.leagueList h3 { margin: 7px 0 3px; font: 800 25px "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.leagueList a { color: #07513f; font-weight: 800; }
+.leagueList small { display: block; margin-top: 8px; color: #6b7974; }
+.requestStatus { display: inline-block; padding: 5px 8px; border-radius: 99px; background: #fff0c2; color: #7a5700; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+.requestStatus.active { background: #dff4d0; color: #27620a; }
+.requestStatus.rejected { background: #ffe1da; color: #9a2e18; }
+.pendingNotice { margin: 16px 0 28px; padding: 16px; border-radius: 8px; background: #fff4cc; color: #66510a; }
+.organizationHero { background: radial-gradient(circle at 80% 30%, #c8f23d44, transparent 28%), linear-gradient(135deg,#062f27,#0a624d); }
+.adminSubdomains { min-height: 100vh; padding: 40px max(5vw, 24px); background: #f5f2e9; color: #173c34; }
+.adminSubdomains header { display: flex; gap: 30px; align-items: start; margin-bottom: 30px; }
+.adminSubdomains header > a { color: #07513f; font-weight: 800; }
+.adminSubdomains h1 { margin: 4px 0; font: 800 48px "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.requestTable { display: grid; gap: 12px; }
+.requestTable article { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 25px; align-items: center; padding: 22px; border: 1px solid #d8dfd9; border-radius: 9px; background: white; }
+.requestTable h2 { margin: 7px 0; font: 800 24px "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.requestTable p,.adminAlias small { color: #6b7974; font-size: 11px; }
+.adminAlias { display: flex; flex-direction: column; gap: 7px; }
+.adminAlias code { padding: 9px; border-radius: 5px; background: #eef2ee; }
+.adminAlias button,.requestActions button { padding: 9px; border: 1px solid #bdc9c4; border-radius: 5px; background: white; color: #07513f; font-weight: 800; }
+.requestActions { display: flex; flex-direction: column; gap: 6px; }
+
+@media (max-width: 800px) {
+  .ownerDashboard > .primaryBtn { float: none; margin-bottom: 20px; }
+  .leagueList article,.requestTable article { display: flex; flex-direction: column; align-items: stretch; }
+}

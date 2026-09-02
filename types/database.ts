@@ -574,7 +574,11 @@ export type Database = {
       }
       organizations: {
         Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
+          description: string | null
           id: string
           logo_url: string | null
           name: string
@@ -583,7 +587,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           logo_url?: string | null
           name: string
@@ -592,7 +600,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -604,6 +616,60 @@ export type Database = {
           {
             foreignKeyName: "organizations_owner_id_fkey"
             columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subdomain_requests: {
+        Row: {
+          activated_at: string | null
+          admin_notes: string | null
+          id: string
+          organization_id: string
+          requested_at: string
+          requested_by: string
+          requested_subdomain: string
+          reviewed_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          admin_notes?: string | null
+          id?: string
+          organization_id: string
+          requested_at?: string
+          requested_by: string
+          requested_subdomain: string
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          admin_notes?: string | null
+          id?: string
+          organization_id?: string
+          requested_at?: string
+          requested_by?: string
+          requested_subdomain?: string
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subdomain_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subdomain_requests_requested_by_fkey"
+            columns: ["requested_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1484,4 +1550,3 @@ export const Constants = {
     },
   },
 } as const
-
