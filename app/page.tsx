@@ -2092,88 +2092,7 @@ function TeamsManager({
   const [filter, setFilter] = useState("Todos");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<number | null>(null);
-  const [records, setRecords] = useState<TeamRecord[]>([
-    {
-      id: 1,
-      name: "Deportivo Bahía",
-      code: "DB",
-      color: "#f6c445",
-      city: "Santa Marta",
-      representative: "Andrés Salcedo",
-      phone: "300 418 2056",
-      email: "bahia@equipo.com",
-      coach: "Juan Carlos Díaz",
-      players: 22,
-      status: "Aprobado",
-      paid: 600000,
-      fee: 850000,
-      updated: "Hoy, 9:42 AM",
-    },
-    {
-      id: 2,
-      name: "Real Ciénaga",
-      code: "RC",
-      color: "#cf4539",
-      city: "Ciénaga",
-      representative: "Miguel Herrera",
-      phone: "315 740 1182",
-      email: "realcienaga@equipo.com",
-      coach: "Sergio Mendoza",
-      players: 20,
-      status: "Pendiente",
-      paid: 350000,
-      fee: 850000,
-      updated: "Ayer, 5:18 PM",
-    },
-    {
-      id: 3,
-      name: "Atlético Caribe",
-      code: "AC",
-      color: "#21a879",
-      city: "Santa Marta",
-      representative: "Óscar Gómez",
-      phone: "301 902 4470",
-      email: "caribe@equipo.com",
-      coach: "Nelson Polo",
-      players: 23,
-      status: "Aprobado",
-      paid: 850000,
-      fee: 850000,
-      updated: "12 ago, 2:06 PM",
-    },
-    {
-      id: 4,
-      name: "Unión Pescadores",
-      code: "UP",
-      color: "#4778d8",
-      city: "Taganga",
-      representative: "Luis Martínez",
-      phone: "320 115 8834",
-      email: "union@equipo.com",
-      coach: "Héctor Rojas",
-      players: 19,
-      status: "Pendiente",
-      paid: 0,
-      fee: 850000,
-      updated: "11 ago, 10:25 AM",
-    },
-    {
-      id: 5,
-      name: "Jaguares del Mar",
-      code: "JM",
-      color: "#8d5ab5",
-      city: "Gaira",
-      representative: "Daniel Acosta",
-      phone: "310 665 2019",
-      email: "jaguares@equipo.com",
-      coach: "Ramiro Pacheco",
-      players: 21,
-      status: "Rechazado",
-      paid: 100000,
-      fee: 850000,
-      updated: "10 ago, 4:30 PM",
-    },
-  ]);
+  const [records, setRecords] = useState<TeamRecord[]>([]);
   const money = (n: number) =>
     new Intl.NumberFormat("es-CO", {
       style: "currency",
@@ -3042,21 +2961,7 @@ type ManagedTournament = {
 function TournamentManager({ notify }: { notify: (s: string) => void }) {
   const [creating, setCreating] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [tournaments, setTournaments] = useState<ManagedTournament[]>([
-    {
-      id: 1,
-      name: "Copa La Playa 2026",
-      format: "Todos contra todos + mata-mata",
-      image:
-        "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=900&q=80",
-      status: "En curso",
-      teams: 16,
-      slug: "copa-la-playa-2026",
-      startDate: "2026-08-02",
-      teamFee: 850000,
-      qualifiers: 4,
-    },
-  ]);
+  const [tournaments, setTournaments] = useState<ManagedTournament[]>([]);
   if (creating)
     return (
       <NewTournamentForm
@@ -3192,48 +3097,7 @@ function TournamentAdministration({
   onQualifiersChange: (n: number) => void;
   notify: (s: string) => void;
 }) {
-  const [registered, setRegistered] = useState<RegisteredTeam[]>([
-    {
-      id: 1,
-      name: "Deportivo Bahía",
-      coach: "Juan Carlos Díaz",
-      players: 22,
-      status: "Aprobado",
-      fee: tournament.teamFee,
-      paid: Math.min(600000, tournament.teamFee),
-      code: "DB",
-    },
-    {
-      id: 2,
-      name: "Real Ciénaga",
-      coach: "Miguel Herrera",
-      players: 20,
-      status: "Pendiente",
-      fee: tournament.teamFee,
-      paid: Math.min(350000, tournament.teamFee),
-      code: "RC",
-    },
-    {
-      id: 3,
-      name: "Atlético Caribe",
-      coach: "Óscar Gómez",
-      players: 23,
-      status: "Aprobado",
-      fee: tournament.teamFee,
-      paid: tournament.teamFee,
-      code: "AC",
-    },
-    {
-      id: 4,
-      name: "Unión Pescadores",
-      coach: "Luis Martínez",
-      players: 19,
-      status: "Pendiente",
-      fee: tournament.teamFee,
-      paid: 0,
-      code: "UP",
-    },
-  ]);
+  const [registered, setRegistered] = useState<RegisteredTeam[]>([]);
   const [paymentTeam, setPaymentTeam] = useState<number | null>(null);
   const [amount, setAmount] = useState("");
   const [qualifierDraft, setQualifierDraft] = useState(tournament.qualifiers);
