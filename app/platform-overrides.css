@@ -121,6 +121,8 @@ a.primaryBtn {
 .leagueList h3 { margin: 7px 0 3px; font: 800 25px "Barlow Condensed", sans-serif; text-transform: uppercase; }
 .leagueList a { color: #07513f; font-weight: 800; }
 .leagueList small { display: block; margin-top: 8px; color: #6b7974; }
+.leagueActions { display: flex; align-items: center; gap: 8px; }
+.leagueActions .primaryBtn { padding: 12px 16px; color: #073f32; text-decoration: none; font-size: 11px; }
 .requestStatus { display: inline-block; padding: 5px 8px; border-radius: 99px; background: #fff0c2; color: #7a5700; font-size: 9px; font-weight: 900; text-transform: uppercase; }
 .requestStatus.active { background: #dff4d0; color: #27620a; }
 .requestStatus.rejected { background: #ffe1da; color: #9a2e18; }

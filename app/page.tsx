@@ -201,8 +201,8 @@ function Crest({ code, small = false }: { code: string; small?: boolean }) {
   );
 }
 
-export default function Home() {
-  const [portalMode, setPortalMode] = useState<{ type: "landing" } | { type: "organization"; slug: string } | null>(null);
+export default function Home({ forceDashboard = false }: { forceDashboard?: boolean } = {}) {
+  const [portalMode, setPortalMode] = useState<{ type: "landing" } | { type: "organization"; slug: string } | { type: "dashboard" } | null>(forceDashboard ? { type: "dashboard" } : null);
   const [view, setView] = useState<View>("Inicio");
   const [adminOpen, setAdminOpen] = useState(false);
   const [toast, setToast] = useState("");
@@ -216,13 +216,17 @@ export default function Home() {
   >(null);
   const [applications, setApplications] = useState<TeamApplication[]>([]);
   useEffect(() => {
+    if (forceDashboard) {
+      setPortalMode({ type: "dashboard" });
+      return;
+    }
     const host = window.location.hostname.toLowerCase();
     if (host.endsWith(".liguita.co") && host !== "www.liguita.co") {
       setPortalMode({ type: "organization", slug: host.slice(0, -".liguita.co".length).split(".")[0] });
     } else {
       setPortalMode({ type: "landing" });
     }
-  }, []);
+  }, [forceDashboard]);
   useEffect(() => {
     const update = (event: Event) =>
       setQualifiers((event as CustomEvent<number>).detail);
