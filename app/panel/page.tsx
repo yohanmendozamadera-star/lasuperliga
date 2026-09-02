@@ -1,5 +1,5 @@
-import Home from "../page";
+import { OwnerPanel } from "../owner-panel";
 
 export default function AdminPanelPage() {
-  return <Home forceDashboard />;
+  return <OwnerPanel />;
 }

@@ -145,3 +145,27 @@ a.primaryBtn {
   .ownerDashboard > .primaryBtn { float: none; margin-bottom: 20px; }
   .leagueList article,.requestTable article { display: flex; flex-direction: column; align-items: stretch; }
 }
+
+.realPanel { min-height: 100vh; display: grid; grid-template-columns: 230px 1fr; background: #f3f1e9; color: #173c34; }
+.realPanel > aside { display: flex; flex-direction: column; padding: 28px 22px; background: #073f32; color: white; }
+.realPanelBrand { display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; font-weight: 900; letter-spacing: 2px; }
+.realPanelBrand img { width: 38px; height: 38px; }
+.realPanel aside > p { margin: 48px 0 12px; color: #8eb6aa; font-size: 9px; letter-spacing: 2px; }
+.realPanel aside nav { display: grid; gap: 7px; }
+.realPanel aside nav a { padding: 12px; border-radius: 6px; color: #d9e8e2; text-decoration: none; font-size: 12px; font-weight: 800; }
+.realPanel aside nav a.active { background: #c5f43d; color: #073f32; }
+.realPanel aside small { margin-top: auto; overflow-wrap: anywhere; color: #9fc1b8; }
+.realPanel aside button { margin-top: 14px; padding: 10px; border: 1px solid #477568; border-radius: 5px; background: transparent; color: white; }
+.realPanel > section { padding: 42px max(5vw, 28px); }
+.realPanel > section > header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 25px; border-bottom: 1px solid #d8ddd6; }
+.realPanel h1,.realPanel h2,.realPanel h3,.realPanelState h1 { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.realPanel h1 { margin: 5px 0; font-size: 38px; }.realPanel header p { margin: 0; color: #6b7974; font-size: 12px; }
+.realPanel select,.realPanel input,.realPanel textarea { padding: 11px; border: 1px solid #c6d0ca; border-radius: 5px; background: white; }
+.panelTitle { display: flex; align-items: end; justify-content: space-between; margin: 38px 0 22px; }.panelTitle h2 { margin: 5px 0 0; font-size: 42px; }
+.realTournamentGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); gap: 15px; }
+.realTournamentGrid article { padding: 24px; border: 1px solid #d7ded8; border-radius: 9px; background: white; }.realTournamentGrid h3 { margin: 12px 0 8px; font-size: 27px; }.realTournamentGrid p,.realTournamentGrid small { color: #697772; }.realTournamentGrid article > div { margin-top: 24px; }
+.tournamentState { padding: 5px 8px; border-radius: 99px; background: #e7f6dc; color: #34710f; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+.realEmpty { padding: 60px 25px; border: 1px dashed #bdc9c2; border-radius: 10px; background: #faf9f4; text-align: center; }.realEmpty > b { font-size: 38px; }.realEmpty h3 { margin: 12px 0 5px; font-size: 30px; }.realEmpty p { margin: 0 auto 22px; max-width: 520px; color: #697772; }
+.realPanelState { min-height: 100vh; display: grid; place-content: center; justify-items: center; padding: 30px; background: #f3f1e9; color: #173c34; text-align: center; }.realPanelState img { width: 90px; }.realPanelState h1 { margin: 14px 0 4px; font-size: 46px; }.realPanelState p { max-width: 540px; color: #65756f; }.realPanelState .primaryBtn { margin-top: 15px; }
+.createTournament select { width: 100%; }
+@media (max-width: 760px) { .realPanel { display: block; }.realPanel > aside { min-height: auto; }.realPanel aside > p { margin-top: 22px; }.realPanel aside small { margin-top: 20px; }.realPanel > section { padding: 28px 18px; }.realPanel > section > header,.panelTitle { align-items: stretch; flex-direction: column; gap: 15px; }.panelTitle .primaryBtn { width: 100%; } }
