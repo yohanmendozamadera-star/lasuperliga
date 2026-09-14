@@ -14,6 +14,12 @@ export function TeamHub({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [tab, setTab] = useState<"team" | "players">("team");
+  const [showPlayerForm, setShowPlayerForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState<any>(null);
+  const [showColors, setShowColors] = useState(false);
+  const [uniformColors, setUniformColors] = useState({ shirt: "#0b5948", shorts: "#f4f4ef", socks: "#0b5948" });
 
   const load = async () => {
     const { data: { user: currentUser } } = await supabase!.auth.getUser();
@@ -30,6 +36,10 @@ export function TeamHub({ id }: { id: string }) {
       .maybeSingle();
 
     setTeam(currentTeam);
+    if (currentTeam) {
+      const valid = (value: string | null, fallback: string): string => /^#[0-9a-f]{6}$/i.test(value || "") ? String(value) : fallback;
+      setUniformColors({ shirt: valid(currentTeam.shirt_color, "#0b5948"), shorts: valid(currentTeam.shorts_color, "#f4f4ef"), socks: valid(currentTeam.socks_color, "#0b5948") });
+    }
     if (currentTeam) {
       const { data } = await supabase!
         .from("players")
@@ -104,6 +114,7 @@ export function TeamHub({ id }: { id: string }) {
       team_id: id,
       created_by: user.id,
       full_name: String(form.get("name")),
+      birth_date: String(form.get("birthDate") || "") || null,
       jersey_number: Number(form.get("number")),
       position: String(form.get("position")),
     }).select("id").single();
@@ -112,6 +123,7 @@ export function TeamHub({ id }: { id: string }) {
       const photo = form.get("photo");
       if (photo instanceof File && photo.size) await uploadPlayerPhoto(player.id, photo, false);
       formElement.reset();
+      setShowPlayerForm(false);
       await load();
     }
   };
@@ -139,11 +151,13 @@ export function TeamHub({ id }: { id: string }) {
     const nameIndex = headers.findIndex(x => ["nombre", "name", "jugador"].includes(x));
     const numberIndex = headers.findIndex(x => ["numero", "number", "dorsal"].includes(x));
     const positionIndex = headers.findIndex(x => ["posicion", "position"].includes(x));
+    const birthDateIndex = headers.findIndex(x => ["fecha_nacimiento", "nacimiento", "birth_date"].includes(x));
     if (nameIndex < 0 || numberIndex < 0) return setMessage("El CSV debe tener las columnas nombre, numero y posicion.");
     const rows = lines.slice(1).map(line => line.split(separator).map(x => x.trim())).filter(values => values[nameIndex] && Number(values[numberIndex])).map(values => ({
       team_id: id,
       created_by: user.id,
       full_name: values[nameIndex],
+      birth_date: birthDateIndex >= 0 && values[birthDateIndex] ? values[birthDateIndex] : null,
       jersey_number: Number(values[numberIndex]),
       position: positionIndex >= 0 && values[positionIndex] ? values[positionIndex] : "Por definir",
     }));
@@ -154,6 +168,19 @@ export function TeamHub({ id }: { id: string }) {
     if (!error) await load();
   };
 
+  const updatePlayer = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const { error } = await supabase!.from("players").update({
+      full_name: String(form.get("name") || "").trim(),
+      birth_date: String(form.get("birthDate") || "") || null,
+      jersey_number: Number(form.get("number")),
+      position: String(form.get("position")),
+    }).eq("id", editingPlayer.id);
+    setMessage(error?.code === "23505" ? "Ese número ya pertenece a otro jugador." : error ? error.message : "Jugador actualizado.");
+    if (!error) { setEditingPlayer(null); await load(); }
+  };
+
   if (loading) return <main className="realPanelState"><h1>Cargando equipo…</h1></main>;
   if (!team) return <main className="realPanelState"><h1>No tienes acceso a este equipo</h1><a href="/">Volver</a></main>;
 
@@ -161,66 +188,36 @@ export function TeamHub({ id }: { id: string }) {
   const back = isOrganizer ? `/panel/torneos/${team.tournaments.id}` : "/mis-equipos";
   const application = team.application ?? {};
 
-  return <main className="teamHub">
-    <header>
-      <a href={back}>← Volver</a>
-      <div>
-        <span className="sectionLabel">{team.tournaments?.name}</span>
-        <h1>Ficha de {team.name}</h1>
-        <p>{isOrganizer ? "Edición como organizador" : "Panel del equipo"} · {team.approved ? "Aprobado" : "Pendiente"}</p>
+  const safeColor = (value: string | null, fallback: string): string => /^#[0-9a-f]{6}$/i.test(value || "") ? String(value) : fallback;
+  const shirt = safeColor(uniformColors.shirt, "#0b5948");
+  const shorts = safeColor(uniformColors.shorts, "#f4f4ef");
+  const socks = safeColor(uniformColors.socks, "#0b5948");
+
+  return <main className="teamHub modernTeamHub">
+    <header><a href={back}>← Volver</a><div><span className="sectionLabel">{team.tournaments?.name}</span><h1>{team.name}</h1><p>{isOrganizer ? "Administración del equipo" : "Mi equipo"} · <b>{team.approved ? "Aprobado" : "Pendiente"}</b></p></div></header>
+    {message && <div className="adminMessage">{message}<button onClick={() => setMessage("")}>×</button></div>}
+    <nav className="teamTabs"><button className={tab === "team" ? "active" : ""} onClick={() => setTab("team")}>Equipo</button><button className={tab === "players" ? "active" : ""} onClick={() => setTab("players")}>Jugadores <span>{players.length}</span></button></nav>
+
+    {tab === "team" && <section className="teamProfile">
+      <div className="teamSummary"><div className="teamBadge">{team.name.slice(0, 2).toUpperCase()}</div><div><span>Equipo inscrito</span><h2>{team.name}</h2><p>{team.coach_name || "Técnico por definir"} · {application.city || "Ciudad por definir"}</p></div></div>
+      <div className="teamProfileGrid">
+        <form className="adminForm" onSubmit={saveTeam}>
+          <h2>Datos del equipo</h2><label>Nombre del equipo<input name="name" defaultValue={team.name} required /></label>
+          <div className="formPair"><label>Técnico<input name="coach" defaultValue={team.coach_name || ""} /></label><label>Representante<input name="representative" defaultValue={application.representative_name || ""} readOnly={!isOrganizer} /></label></div>
+          <div className="formPair"><label>Celular<input name="phone" type="tel" defaultValue={application.phone || ""} readOnly={!isOrganizer} /></label><label>Correo<input name="email" type="email" defaultValue={application.email || ""} readOnly={!isOrganizer} /></label></div>
+          <label>Ciudad<input name="city" defaultValue={application.city || ""} readOnly={!isOrganizer} /></label>
+          <div className="uniformFields"><h2>Uniforme</h2><p>Pulsa el uniforme para cambiar sus colores.</p><button type="button" className="uniformPreview" onClick={() => setShowColors(!showColors)} aria-label="Editar colores del uniforme"><svg viewBox="0 0 220 250"><path fill={shirt} d="M56 28 91 10h38l35 18 34 38-27 27-18-17v72H67V76L49 93 22 66z"/><path fill={shorts} stroke="#b7c2bc" d="M68 155h84l13 74-43 5-12-42-12 42-43-5z"/><path fill={socks} d="M65 231h32v17H55zm58 0h32l10 17h-42z"/><text x="110" y="93" textAnchor="middle" fill="#fff" fontSize="34" fontWeight="900">{team.name.slice(0,2).toUpperCase()}</text></svg><span>Editar colores</span></button>{showColors && <div className="colorPanel"><label>Camisa<input name="shirt" type="color" value={shirt} onChange={e=>setUniformColors({...uniformColors,shirt:e.target.value})}/></label><label>Pantaloneta<input name="shorts" type="color" value={shorts} onChange={e=>setUniformColors({...uniformColors,shorts:e.target.value})}/></label><label>Medias<input name="socks" type="color" value={socks} onChange={e=>setUniformColors({...uniformColors,socks:e.target.value})}/></label></div>} {!showColors && <><input type="hidden" name="shirt" value={shirt}/><input type="hidden" name="shorts" value={shorts}/><input type="hidden" name="socks" value={socks}/></>}</div>
+          <button className="primaryBtn" disabled={saving}>{saving ? "Guardando…" : "Guardar cambios"}</button>
+        </form>
       </div>
-    </header>
+    </section>}
 
-    {message && <div className="adminMessage">{message}</div>}
+    {tab === "players" && <section className="playersPanel">
+      <div className="playersHeading"><div><span className="sectionLabel">PLANTILLA</span><h2>Jugadores del equipo</h2><p>{players.length} jugador{players.length === 1 ? "" : "es"} registrado{players.length === 1 ? "" : "s"}</p></div><div><button className="outlineBtn" onClick={() => setShowImport(true)}>Importar lista</button><button className="primaryBtn" onClick={() => setShowPlayerForm(true)}>+ Agregar jugador</button></div></div>
+      <div className="playerCards">{players.length ? players.map(player => <article key={player.id}><div className="playerIdentity">{player.photo_preview ? <img src={player.photo_preview} alt={player.full_name}/> : <span>{player.full_name.slice(0,1).toUpperCase()}</span>}<div><b>#{player.jersey_number} · {player.full_name}</b><small>{player.position || "Sin posición"}{player.birth_date ? ` · ${new Date(`${player.birth_date}T12:00:00`).toLocaleDateString("es-CO")}` : " · Sin fecha de nacimiento"}</small></div></div><div className="playerActions"><label>{player.photo_url ? "Cambiar foto" : "Subir foto"}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { const file=event.target.files?.[0]; if(file) void uploadPlayerPhoto(player.id,file); }}/></label><button onClick={() => setEditingPlayer(player)}>Editar</button><button onClick={async()=>{if(confirm("¿Eliminar este jugador?")){await supabase!.from("players").delete().eq("id",player.id);await load();}}}>Eliminar</button></div></article>) : <div className="emptyPlayers"><b>11</b><h3>Aún no hay jugadores</h3><p>Registra uno por uno o importa la plantilla completa.</p><button className="primaryBtn" onClick={() => setShowPlayerForm(true)}>Agregar primer jugador</button></div>}</div>
+    </section>}
 
-    <div className="adminGrid teamEditGrid">
-      <form className="adminForm" onSubmit={saveTeam}>
-        <h2>Equipo y contacto</h2>
-        <label>Nombre del equipo<input name="name" defaultValue={team.name} required /></label>
-        <div className="formPair">
-          <label>Técnico<input name="coach" defaultValue={team.coach_name || ""} /></label>
-          <label>Representante<input name="representative" defaultValue={application.representative_name || ""} readOnly={!isOrganizer} /></label>
-        </div>
-        <div className="formPair">
-          <label>Celular<input name="phone" type="tel" defaultValue={application.phone || ""} readOnly={!isOrganizer} /></label>
-          <label>Correo<input name="email" type="email" defaultValue={application.email || ""} readOnly={!isOrganizer} /></label>
-        </div>
-        <label>Ciudad<input name="city" defaultValue={application.city || ""} readOnly={!isOrganizer} /></label>
-        {!team.application_id && <p className="teamContactNote">Este equipo no tiene una solicitud vinculada; por eso todavía no hay datos del representante.</p>}
-
-        <h2>Colores del uniforme</h2>
-        <div className="formPair">
-          <label>Camisa<input name="shirt" defaultValue={team.shirt_color || ""} required /></label>
-          <label>Pantaloneta<input name="shorts" defaultValue={team.shorts_color || ""} required /></label>
-        </div>
-        <label>Medias<input name="socks" defaultValue={team.socks_color || ""} required /></label>
-        <button className="primaryBtn" disabled={saving}>{saving ? "Guardando…" : "Guardar cambios"}</button>
-      </form>
-
-      <form className="adminForm" onSubmit={addPlayer}>
-        <h2>Registrar jugador</h2>
-        <label>Nombre completo<input name="name" required /></label>
-        <div className="formPair">
-          <label>Número<input name="number" type="number" min="1" max="99" required /></label>
-          <label>Posición<select name="position"><option>Arquero</option><option>Defensa</option><option>Volante</option><option>Delantero</option></select></label>
-        </div>
-        <label>Foto del jugador<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>
-        <button className="primaryBtn">Agregar jugador</button>
-        <div className="playerImport"><b>Importar varios jugadores</b><small>Archivo CSV con columnas: nombre, numero, posicion.</small><label className="outlineBtn">Seleccionar CSV<input type="file" accept=".csv,text/csv" onChange={importPlayers} /></label></div>
-      </form>
-    </div>
-
-    <section>
-      <h2>Plantilla ({players.length})</h2>
-      {players.length ? players.map((player) => <article className="adminRow" key={player.id}>
-        <div className="playerIdentity">{player.photo_preview ? <img src={player.photo_preview} alt={player.full_name} /> : <span>{player.full_name.slice(0, 1).toUpperCase()}</span>}<div><b>#{player.jersey_number} · {player.full_name}</b><small>{player.position}</small></div></div>
-        <div className="playerActions"><label>Subir foto<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { const file = event.target.files?.[0]; if (file) void uploadPlayerPhoto(player.id, file); }} /></label><button onClick={async () => {
-          if (confirm("¿Eliminar este jugador?")) {
-            await supabase!.from("players").delete().eq("id", player.id);
-            await load();
-          }
-        }}>Eliminar</button></div>
-      </article>) : <p>Aún no hay jugadores registrados.</p>}
-    </section>
+    {(showPlayerForm || editingPlayer) && <div className="createOverlay"><form className="createTournament" onSubmit={editingPlayer ? updatePlayer : addPlayer}><button type="button" className="modalClose" onClick={() => {setShowPlayerForm(false);setEditingPlayer(null);}}>×</button><p className="sectionLabel">{editingPlayer ? "EDITAR" : "NUEVO"} JUGADOR</p><h2>{editingPlayer ? "Editar jugador" : "Agregar jugador"}</h2><label>Nombre completo<input name="name" defaultValue={editingPlayer?.full_name || ""} required /></label><div className="formPair"><label>Fecha de nacimiento<input name="birthDate" type="date" defaultValue={editingPlayer?.birth_date || ""} /></label><label>Número de camiseta<input name="number" type="number" min="1" max="99" defaultValue={editingPlayer?.jersey_number || ""} required /></label></div><label>Posición<select name="position" defaultValue={editingPlayer?.position || "Delantero"}><option>Arquero</option><option>Defensa</option><option>Volante</option><option>Delantero</option></select></label>{!editingPlayer && <label>Foto (puedes cargarla después)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>}<button className="primaryBtn wide">{editingPlayer ? "Guardar jugador" : "Agregar jugador"}</button></form></div>}
+    {showImport && <div className="createOverlay"><div className="createTournament"><button type="button" className="modalClose" onClick={() => setShowImport(false)}>×</button><p className="sectionLabel">IMPORTACIÓN</p><h2>Importar jugadores</h2><p>Selecciona un archivo CSV con las columnas <b>nombre, numero, posicion, fecha_nacimiento</b>. La fecha debe ir como AAAA-MM-DD.</p><label className="csvDrop">Seleccionar archivo CSV<input type="file" accept=".csv,text/csv" onChange={async event => {await importPlayers(event);setShowImport(false);}} /></label></div></div>}
   </main>;
 }
