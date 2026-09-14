@@ -192,5 +192,17 @@ a.primaryBtn {
 .playersPanel { padding:28px!important; }.playersHeading { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:20px; }.playersHeading h2 { margin:4px 0; font-size:36px; }.playersHeading p { margin:0; color:#6b7974; }.playersHeading>div:last-child { display:flex; gap:8px; }.playerCards>article { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:16px; border-bottom:1px solid #e0e5df; }.emptyPlayers { padding:55px; border:1px dashed #b9c7c0; border-radius:9px; background:#f8f9f5; text-align:center; }.emptyPlayers>b { display:grid; place-items:center; width:58px; height:58px; margin:auto; border-radius:50%; background:#e2e9e2; color:#07513f; font-size:22px; }.emptyPlayers h3 { margin:12px 0 4px; font:900 26px "Barlow Condensed",sans-serif; }.emptyPlayers p { color:#6b7974; }
 .csvDrop { display:grid; place-items:center; min-height:130px; margin:20px 0; border:2px dashed #9eb0a7; border-radius:9px; background:#f3f6f1; color:#07513f; font-weight:900; cursor:pointer; }.csvDrop input { display:none; }
 .templateDownload { display:inline-flex; margin:8px 0; color:#07513f; text-decoration:none; }
+.teamBadge img { width:100%; height:100%; object-fit:contain; padding:8px; }
+.crestUpload { margin-left:auto; padding:10px 14px; border:1px solid #7aa496; border-radius:6px; color:#fff; font-size:10px; font-weight:900; cursor:pointer; }
+.crestUpload input { display:none; }
+.uniformRequired { margin:0; padding:10px; border-radius:5px; background:#fff0c2; color:#715300; font-size:11px; }
+.publicMatchTeams { display:flex; align-items:center; justify-content:center; gap:16px; }
+.publicMatchTeams span { display:flex; align-items:center; gap:7px; }
+.publicMatchTeams img,.standingTeam img { width:34px; height:34px; object-fit:contain; border-radius:50%; background:#fff; }
+.publicMatchTeams strong { white-space:nowrap; }
+.standingTeam { display:flex; align-items:center; gap:9px; }
+.standingTeam img { width:28px; height:28px; }
+.matchEditor { width:min(680px,92vw); }
+.colorPanel button { align-self:end; padding:10px 12px; border:0; border-radius:5px; background:#073f32; color:#fff; font-weight:800; }
 @media(max-width:700px){.uniformFields{display:block}.uniformPreview{margin:auto}.colorPanel{justify-content:center;flex-wrap:wrap}.playersHeading,.playerCards>article{align-items:stretch;flex-direction:column}.playersHeading>div:last-child,.playerActions{flex-wrap:wrap}.teamSummary{padding:20px}.teamProfileGrid,.playersPanel{padding:16px!important}}
 @media(max-width:800px){.tAdmin>header,.teamHub>header,.adminGrid,.adminForm.horizontal{display:flex;flex-direction:column;align-items:stretch}.tAdmin>nav{overflow:auto}.adminRow{align-items:flex-start;flex-wrap:wrap}.calendarActions{align-items:stretch;flex-direction:column}}

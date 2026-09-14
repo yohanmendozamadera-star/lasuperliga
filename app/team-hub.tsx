@@ -20,6 +20,8 @@ export function TeamHub({ id }: { id: string }) {
   const [editingPlayer, setEditingPlayer] = useState<any>(null);
   const [showColors, setShowColors] = useState(false);
   const [uniformColors, setUniformColors] = useState({ shirt: "#0b5948", shorts: "#f4f4ef", socks: "#0b5948" });
+  const [uniformDefined, setUniformDefined] = useState(false);
+  const [uploadingCrest, setUploadingCrest] = useState(false);
 
   const load = async () => {
     const { data: { user: currentUser } } = await supabase!.auth.getUser();
@@ -39,6 +41,7 @@ export function TeamHub({ id }: { id: string }) {
     if (currentTeam) {
       const valid = (value: string | null, fallback: string): string => /^#[0-9a-f]{6}$/i.test(value || "") ? String(value) : fallback;
       setUniformColors({ shirt: valid(currentTeam.shirt_color, "#0b5948"), shorts: valid(currentTeam.shorts_color, "#f4f4ef"), socks: valid(currentTeam.socks_color, "#0b5948") });
+      setUniformDefined([currentTeam.shirt_color,currentTeam.shorts_color,currentTeam.socks_color].every(value=>/^#[0-9a-f]{6}$/i.test(value||"")));
     }
     if (currentTeam) {
       const { data } = await supabase!
@@ -190,6 +193,21 @@ export function TeamHub({ id }: { id: string }) {
     if (!error) { setEditingPlayer(null); await load(); }
   };
 
+  const uploadCrest = async (file: File) => {
+    if (!['image/jpeg','image/png','image/webp','image/svg+xml'].includes(file.type)) return setMessage("El escudo debe ser JPG, PNG, WebP o SVG.");
+    if (file.size > 3 * 1024 * 1024) return setMessage("El escudo no puede superar 3 MB.");
+    setUploadingCrest(true);
+    const extension=file.name.split('.').pop()?.toLowerCase()||'png';
+    const path=`${id}/escudo-${crypto.randomUUID()}.${extension}`;
+    const {error:uploadError}=await supabase!.storage.from('team-crests').upload(path,file);
+    if(uploadError){setMessage(`No se pudo cargar el escudo: ${uploadError.message}`);setUploadingCrest(false);return;}
+    const {data:publicFile}=supabase!.storage.from('team-crests').getPublicUrl(path);
+    const {error:updateError}=await supabase!.from('teams').update({crest_url:publicFile.publicUrl}).eq('id',id);
+    setMessage(updateError?updateError.message:"Escudo actualizado correctamente.");
+    setUploadingCrest(false);
+    if(!updateError)await load();
+  };
+
   if (loading) return <main className="realPanelState"><h1>Cargando equipo…</h1></main>;
   if (!team) return <main className="realPanelState"><h1>No tienes acceso a este equipo</h1><a href="/">Volver</a></main>;
 
@@ -216,15 +234,15 @@ export function TeamHub({ id }: { id: string }) {
     <nav className="teamTabs"><button className={tab === "team" ? "active" : ""} onClick={() => setTab("team")}>Equipo</button><button className={tab === "players" ? "active" : ""} onClick={() => setTab("players")}>Jugadores <span>{players.length}</span></button></nav>
 
     {tab === "team" && <section className="teamProfile">
-      <div className="teamSummary"><div className="teamBadge">{team.name.slice(0, 2).toUpperCase()}</div><div><span>Equipo inscrito</span><h2>{team.name}</h2><p>{team.coach_name || "Técnico por definir"} · {application.city || "Ciudad por definir"}</p></div></div>
+      <div className="teamSummary"><div className="teamBadge">{team.crest_url?<img src={team.crest_url} alt={`Escudo de ${team.name}`}/>:team.name.slice(0, 2).toUpperCase()}</div><div><span>Equipo inscrito</span><h2>{team.name}</h2><p>{team.coach_name || "Técnico por definir"} · {application.city || "Ciudad por definir"}</p></div><label className="crestUpload">{uploadingCrest?"Cargando…":team.crest_url?"Cambiar escudo":"Cargar escudo"}<input type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" disabled={uploadingCrest} onChange={e=>{const file=e.target.files?.[0];if(file)void uploadCrest(file);}}/></label></div>
       <div className="teamProfileGrid">
         <form className="adminForm" onSubmit={saveTeam}>
           <h2>Datos del equipo</h2><label>Nombre del equipo<input name="name" defaultValue={team.name} required /></label>
           <div className="formPair"><label>Técnico<input name="coach" defaultValue={team.coach_name || ""} /></label><label>Representante<input name="representative" defaultValue={application.representative_name || ""} readOnly={!isOrganizer} /></label></div>
           <div className="formPair"><label>Celular<input name="phone" type="tel" defaultValue={application.phone || ""} readOnly={!isOrganizer} /></label><label>Correo<input name="email" type="email" defaultValue={application.email || ""} readOnly={!isOrganizer} /></label></div>
           <label>Ciudad<input name="city" defaultValue={application.city || ""} readOnly={!isOrganizer} /></label>
-          <div className="uniformFields"><h2>Uniforme</h2><p>Pulsa el uniforme para cambiar sus colores.</p><button type="button" className="uniformPreview" onClick={() => setShowColors(!showColors)} aria-label="Editar colores del uniforme"><svg viewBox="0 0 220 250"><path fill={shirt} d="M56 28 91 10h38l35 18 34 38-27 27-18-17v72H67V76L49 93 22 66z"/><path fill={shorts} stroke="#b7c2bc" d="M68 155h84l13 74-43 5-12-42-12 42-43-5z"/><path fill={socks} d="M65 231h32v17H55zm58 0h32l10 17h-42z"/><text x="110" y="93" textAnchor="middle" fill="#fff" fontSize="34" fontWeight="900">{team.name.slice(0,2).toUpperCase()}</text></svg><span>Editar colores</span></button>{showColors && <div className="colorPanel"><label>Camisa<input name="shirt" type="color" value={shirt} onChange={e=>setUniformColors({...uniformColors,shirt:e.target.value})}/></label><label>Pantaloneta<input name="shorts" type="color" value={shorts} onChange={e=>setUniformColors({...uniformColors,shorts:e.target.value})}/></label><label>Medias<input name="socks" type="color" value={socks} onChange={e=>setUniformColors({...uniformColors,socks:e.target.value})}/></label></div>} {!showColors && <><input type="hidden" name="shirt" value={shirt}/><input type="hidden" name="shorts" value={shorts}/><input type="hidden" name="socks" value={socks}/></>}</div>
-          <button className="primaryBtn" disabled={saving}>{saving ? "Guardando…" : "Guardar cambios"}</button>
+          <div className="uniformFields"><h2>Uniforme</h2><p>Pulsa el uniforme y confirma los tres colores.</p><button type="button" className="uniformPreview" onClick={() => setShowColors(!showColors)} aria-label="Editar colores del uniforme"><svg viewBox="0 0 220 250"><path fill={shirt} d="M56 28 91 10h38l35 18 34 38-27 27-18-17v72H67V76L49 93 22 66z"/><path fill={shorts} stroke="#b7c2bc" d="M68 155h84l13 74-43 5-12-42-12 42-43-5z"/><path fill={socks} d="M65 231h32v17H55zm58 0h32l10 17h-42z"/><text x="110" y="93" textAnchor="middle" fill="#fff" fontSize="34" fontWeight="900">{team.name.slice(0,2).toUpperCase()}</text></svg><span>Editar colores</span></button>{showColors && <div className="colorPanel"><label>Camisa<input name="shirt" type="color" value={shirt} onChange={e=>setUniformColors({...uniformColors,shirt:e.target.value})}/></label><label>Pantaloneta<input name="shorts" type="color" value={shorts} onChange={e=>setUniformColors({...uniformColors,shorts:e.target.value})}/></label><label>Medias<input name="socks" type="color" value={socks} onChange={e=>setUniformColors({...uniformColors,socks:e.target.value})}/></label><button type="button" onClick={()=>{setUniformDefined(true);setShowColors(false);}}>Confirmar colores</button></div>} {!showColors && <><input type="hidden" name="shirt" value={shirt}/><input type="hidden" name="shorts" value={shorts}/><input type="hidden" name="socks" value={socks}/></>}</div>
+          {!uniformDefined&&<p className="uniformRequired">Define los colores de camisa, pantaloneta y medias para habilitar el guardado.</p>}<button className="primaryBtn" disabled={saving||!uniformDefined}>{saving ? "Guardando…" : "Guardar datos del equipo"}</button>
         </form>
       </div>
     </section>}
