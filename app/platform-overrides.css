@@ -174,4 +174,13 @@ a.primaryBtn {
 .teamContactNote { margin:0; padding:10px; border-radius:5px; background:#fff2c9; color:#6c5610; font-size:11px; }
 .adminForm input[readonly] { background:#e3e8e3; color:#63706b; }
 .teamEditButton { display:inline-flex; align-items:center; white-space:nowrap; background:#073f32!important; color:white!important; }
+.playerImport { display:grid; gap:7px; margin-top:8px; padding-top:16px; border-top:1px solid #cbd4cd; }
+.playerImport small { color:#697772; }
+.playerImport label,.playerActions label { display:inline-flex; width:max-content; cursor:pointer; }
+.playerImport input,.playerActions input { display:none; }
+.playerIdentity { display:flex!important; grid-template-columns:none!important; align-items:center; gap:12px!important; }
+.playerIdentity>img,.playerIdentity>span { width:46px; height:46px; border-radius:50%; object-fit:cover; }
+.playerIdentity>span { display:grid; place-items:center; background:#dce6de; color:#07513f; font-weight:900; }
+.playerActions { display:flex; align-items:center; gap:7px; }
+.playerActions label { padding:8px 10px; border:1px solid #b9c7c0; border-radius:5px; background:#fff; color:#07513f; font-size:10px; font-weight:800; }
 @media(max-width:800px){.tAdmin>header,.teamHub>header,.adminGrid,.adminForm.horizontal{display:flex;flex-direction:column;align-items:stretch}.tAdmin>nav{overflow:auto}.adminRow{align-items:flex-start;flex-wrap:wrap}.calendarActions{align-items:stretch;flex-direction:column}}

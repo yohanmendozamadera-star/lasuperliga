@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../lib/supabase/client";
 import "./platform.css";
 import "./platform-overrides.css";
@@ -36,7 +36,12 @@ export function TeamHub({ id }: { id: string }) {
         .select("*")
         .eq("team_id", id)
         .order("jersey_number");
-      setPlayers(data ?? []);
+      const withPhotos = await Promise.all((data ?? []).map(async (player: any) => {
+        if (!player.photo_url) return player;
+        const { data: signed } = await supabase!.storage.from("player-photos").createSignedUrl(player.photo_url, 3600);
+        return { ...player, photo_preview: signed?.signedUrl || null };
+      }));
+      setPlayers(withPhotos);
     }
     setLoading(false);
   };
@@ -95,19 +100,58 @@ export function TeamHub({ id }: { id: string }) {
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
-    const { error } = await supabase!.from("players").insert({
+    const { data: player, error } = await supabase!.from("players").insert({
       team_id: id,
       created_by: user.id,
       full_name: String(form.get("name")),
       jersey_number: Number(form.get("number")),
       position: String(form.get("position")),
-      photo_url: String(form.get("photo") || "") || null,
-    });
+    }).select("id").single();
     setMessage(error?.code === "23505" ? "Ese número ya pertenece a otro jugador." : error ? error.message : "Jugador registrado.");
-    if (!error) {
+    if (!error && player) {
+      const photo = form.get("photo");
+      if (photo instanceof File && photo.size) await uploadPlayerPhoto(player.id, photo, false);
       formElement.reset();
       await load();
     }
+  };
+
+  const uploadPlayerPhoto = async (playerId: string, file: File, refresh = true) => {
+    if (!file.type.startsWith("image/")) { setMessage("Selecciona una imagen JPG, PNG o WebP."); return; }
+    if (file.size > 5 * 1024 * 1024) { setMessage("La foto no puede superar 5 MB."); return; }
+    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `${id}/${playerId}-${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabase!.storage.from("player-photos").upload(path, file);
+    if (uploadError) { setMessage(uploadError.message); return; }
+    const { error: updateError } = await supabase!.from("players").update({ photo_url: path }).eq("id", playerId);
+    setMessage(updateError ? updateError.message : "Foto guardada correctamente.");
+    if (refresh && !updateError) await load();
+  };
+
+  const importPlayers = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    if (!lines.length) return setMessage("El archivo está vacío.");
+    const separator = lines[0].includes(";") ? ";" : ",";
+    const headers = lines[0].split(separator).map(x => x.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+    const nameIndex = headers.findIndex(x => ["nombre", "name", "jugador"].includes(x));
+    const numberIndex = headers.findIndex(x => ["numero", "number", "dorsal"].includes(x));
+    const positionIndex = headers.findIndex(x => ["posicion", "position"].includes(x));
+    if (nameIndex < 0 || numberIndex < 0) return setMessage("El CSV debe tener las columnas nombre, numero y posicion.");
+    const rows = lines.slice(1).map(line => line.split(separator).map(x => x.trim())).filter(values => values[nameIndex] && Number(values[numberIndex])).map(values => ({
+      team_id: id,
+      created_by: user.id,
+      full_name: values[nameIndex],
+      jersey_number: Number(values[numberIndex]),
+      position: positionIndex >= 0 && values[positionIndex] ? values[positionIndex] : "Por definir",
+    }));
+    if (!rows.length) return setMessage("No encontramos jugadores válidos en el archivo.");
+    const { error } = await supabase!.from("players").upsert(rows, { onConflict: "team_id,jersey_number" });
+    setMessage(error ? error.message : `${rows.length} jugador${rows.length === 1 ? "" : "es"} importado${rows.length === 1 ? "" : "s"}.`);
+    event.target.value = "";
+    if (!error) await load();
   };
 
   if (loading) return <main className="realPanelState"><h1>Cargando equipo…</h1></main>;
@@ -160,21 +204,22 @@ export function TeamHub({ id }: { id: string }) {
           <label>Número<input name="number" type="number" min="1" max="99" required /></label>
           <label>Posición<select name="position"><option>Arquero</option><option>Defensa</option><option>Volante</option><option>Delantero</option></select></label>
         </div>
-        <label>URL de la foto<input name="photo" type="url" placeholder="https://..." /></label>
+        <label>Foto del jugador<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>
         <button className="primaryBtn">Agregar jugador</button>
+        <div className="playerImport"><b>Importar varios jugadores</b><small>Archivo CSV con columnas: nombre, numero, posicion.</small><label className="outlineBtn">Seleccionar CSV<input type="file" accept=".csv,text/csv" onChange={importPlayers} /></label></div>
       </form>
     </div>
 
     <section>
       <h2>Plantilla ({players.length})</h2>
       {players.length ? players.map((player) => <article className="adminRow" key={player.id}>
-        <div><b>#{player.jersey_number} · {player.full_name}</b><small>{player.position}</small></div>
-        <button onClick={async () => {
+        <div className="playerIdentity">{player.photo_preview ? <img src={player.photo_preview} alt={player.full_name} /> : <span>{player.full_name.slice(0, 1).toUpperCase()}</span>}<div><b>#{player.jersey_number} · {player.full_name}</b><small>{player.position}</small></div></div>
+        <div className="playerActions"><label>Subir foto<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { const file = event.target.files?.[0]; if (file) void uploadPlayerPhoto(player.id, file); }} /></label><button onClick={async () => {
           if (confirm("¿Eliminar este jugador?")) {
             await supabase!.from("players").delete().eq("id", player.id);
             await load();
           }
-        }}>Eliminar</button>
+        }}>Eliminar</button></div>
       </article>) : <p>Aún no hay jugadores registrados.</p>}
     </section>
   </main>;
