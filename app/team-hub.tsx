@@ -134,8 +134,9 @@ export function TeamHub({ id }: { id: string }) {
     const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = `${id}/${playerId}-${crypto.randomUUID()}.${extension}`;
     const { error: uploadError } = await supabase!.storage.from("player-photos").upload(path, file);
-    if (uploadError) { setMessage(uploadError.message); return; }
+    if (uploadError) { const notice=`No se pudo subir la foto: ${uploadError.message}`; setMessage(notice); alert(notice); return; }
     const { error: updateError } = await supabase!.from("players").update({ photo_url: path }).eq("id", playerId);
+    if (updateError) alert(`La foto subió, pero no pudo vincularse al jugador: ${updateError.message}`);
     setMessage(updateError ? updateError.message : "Foto guardada correctamente.");
     if (refresh && !updateError) await load();
   };
@@ -143,27 +144,35 @@ export function TeamHub({ id }: { id: string }) {
   const importPlayers = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-    if (!lines.length) return setMessage("El archivo está vacío.");
-    const separator = lines[0].includes(";") ? ";" : ",";
-    const headers = lines[0].split(separator).map(x => x.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-    const nameIndex = headers.findIndex(x => ["nombre", "name", "jugador"].includes(x));
-    const numberIndex = headers.findIndex(x => ["numero", "number", "dorsal"].includes(x));
+    if (!file.name.toLowerCase().endsWith(".xlsx")) return setMessage("Selecciona un archivo de Excel .xlsx.");
+    if (file.size > 2 * 1024 * 1024) return setMessage("El archivo de Excel no puede superar 2 MB.");
+    const ExcelJS = await import("exceljs");
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await file.arrayBuffer());
+    const sheet = workbook.worksheets[0];
+    if (!sheet) return setMessage("El archivo de Excel no contiene hojas.");
+    const cellText = (value: any) => value instanceof Date ? value.toISOString().slice(0, 10) : typeof value === "object" && value?.text ? String(value.text) : String(value ?? "").trim();
+    const normalize = (value: any) => cellText(value).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
+    const headers = (sheet.getRow(1).values as any[]).slice(1).map(normalize);
+    const nameIndex = headers.findIndex(x => ["nombre", "nombre completo", "name", "jugador"].includes(x));
+    const numberIndex = headers.findIndex(x => ["numero", "numero de camiseta", "number", "dorsal"].includes(x));
     const positionIndex = headers.findIndex(x => ["posicion", "position"].includes(x));
-    const birthDateIndex = headers.findIndex(x => ["fecha_nacimiento", "nacimiento", "birth_date"].includes(x));
-    if (nameIndex < 0 || numberIndex < 0) return setMessage("El CSV debe tener las columnas nombre, numero y posicion.");
-    const rows = lines.slice(1).map(line => line.split(separator).map(x => x.trim())).filter(values => values[nameIndex] && Number(values[numberIndex])).map(values => ({
-      team_id: id,
-      created_by: user.id,
-      full_name: values[nameIndex],
-      birth_date: birthDateIndex >= 0 && values[birthDateIndex] ? values[birthDateIndex] : null,
-      jersey_number: Number(values[numberIndex]),
-      position: positionIndex >= 0 && values[positionIndex] ? values[positionIndex] : "Por definir",
-    }));
+    const birthDateIndex = headers.findIndex(x => ["fecha de nacimiento", "fecha nacimiento", "fecha_nacimiento", "nacimiento", "birth_date"].includes(x));
+    if (nameIndex < 0 || numberIndex < 0) return setMessage("El Excel debe conservar las columnas Nombre completo y Número de camiseta.");
+    const rows: any[] = [];
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1 || rows.length >= 200) return;
+      const values = (row.values as any[]).slice(1);
+      const fullName = cellText(values[nameIndex]);
+      const jerseyNumber = Number(cellText(values[numberIndex]));
+      if (!fullName || !jerseyNumber) return;
+      const rawBirthDate = birthDateIndex >= 0 ? values[birthDateIndex] : null;
+      const birthDate = rawBirthDate instanceof Date ? rawBirthDate.toISOString().slice(0, 10) : cellText(rawBirthDate) || null;
+      rows.push({ team_id: id, created_by: user.id, full_name: fullName, birth_date: birthDate, jersey_number: jerseyNumber, position: positionIndex >= 0 ? cellText(values[positionIndex]) || "Por definir" : "Por definir" });
+    });
     if (!rows.length) return setMessage("No encontramos jugadores válidos en el archivo.");
     const { error } = await supabase!.from("players").upsert(rows, { onConflict: "team_id,jersey_number" });
-    setMessage(error ? error.message : `${rows.length} jugador${rows.length === 1 ? "" : "es"} importado${rows.length === 1 ? "" : "s"}.`);
+    setMessage(error ? error.message : `${rows.length} jugador${rows.length === 1 ? "" : "es"} importado${rows.length === 1 ? "" : "s"} desde Excel.`);
     event.target.value = "";
     if (!error) await load();
   };
@@ -218,6 +227,6 @@ export function TeamHub({ id }: { id: string }) {
     </section>}
 
     {(showPlayerForm || editingPlayer) && <div className="createOverlay"><form className="createTournament" onSubmit={editingPlayer ? updatePlayer : addPlayer}><button type="button" className="modalClose" onClick={() => {setShowPlayerForm(false);setEditingPlayer(null);}}>×</button><p className="sectionLabel">{editingPlayer ? "EDITAR" : "NUEVO"} JUGADOR</p><h2>{editingPlayer ? "Editar jugador" : "Agregar jugador"}</h2><label>Nombre completo<input name="name" defaultValue={editingPlayer?.full_name || ""} required /></label><div className="formPair"><label>Fecha de nacimiento<input name="birthDate" type="date" defaultValue={editingPlayer?.birth_date || ""} /></label><label>Número de camiseta<input name="number" type="number" min="1" max="99" defaultValue={editingPlayer?.jersey_number || ""} required /></label></div><label>Posición<select name="position" defaultValue={editingPlayer?.position || "Delantero"}><option>Arquero</option><option>Defensa</option><option>Volante</option><option>Delantero</option></select></label>{!editingPlayer && <label>Foto (puedes cargarla después)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>}<button className="primaryBtn wide">{editingPlayer ? "Guardar jugador" : "Agregar jugador"}</button></form></div>}
-    {showImport && <div className="createOverlay"><div className="createTournament"><button type="button" className="modalClose" onClick={() => setShowImport(false)}>×</button><p className="sectionLabel">IMPORTACIÓN</p><h2>Importar jugadores</h2><p>Selecciona un archivo CSV con las columnas <b>nombre, numero, posicion, fecha_nacimiento</b>. La fecha debe ir como AAAA-MM-DD.</p><label className="csvDrop">Seleccionar archivo CSV<input type="file" accept=".csv,text/csv" onChange={async event => {await importPlayers(event);setShowImport(false);}} /></label></div></div>}
+    {showImport && <div className="createOverlay"><div className="createTournament"><button type="button" className="modalClose" onClick={() => setShowImport(false)}>×</button><p className="sectionLabel">IMPORTACIÓN</p><h2>Importar jugadores desde Excel</h2><p>Descarga el archivo de muestra, reemplaza los ejemplos con tus jugadores y luego súbelo aquí. Puedes importar hasta 200 jugadores.</p><a className="outlineBtn templateDownload" href="/plantilla-jugadores.xlsx" download>Descargar archivo de muestra</a><label className="csvDrop">Seleccionar archivo de Excel<input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={async event => {await importPlayers(event);setShowImport(false);}} /></label></div></div>}
   </main>;
 }
