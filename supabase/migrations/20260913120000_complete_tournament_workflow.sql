@@ -1,0 +1,13 @@
+alter table public.tournaments add column if not exists round_robin_legs smallint not null default 1;
+alter table public.tournaments drop constraint if exists tournaments_round_robin_legs_check;
+alter table public.tournaments add constraint tournaments_round_robin_legs_check check (round_robin_legs in (1,2));
+alter table public.team_applications add column if not exists requested_role text not null default 'owner';
+alter table public.team_applications drop constraint if exists team_applications_requested_role_check;
+alter table public.team_applications add constraint team_applications_requested_role_check check (requested_role in ('owner','coach'));
+drop policy if exists players_delete on public.players;
+create policy players_delete on public.players for delete to authenticated using (exists (select 1 from public.teams t join public.tournaments tr on tr.id=t.tournament_id where t.id=players.team_id and (t.owner_id=(select auth.uid()) or tr.owner_id=(select auth.uid()) or exists(select 1 from public.team_members tm where tm.team_id=t.id and tm.user_id=(select auth.uid())))));
+drop policy if exists players_insert on public.players;
+create policy players_insert on public.players for insert to authenticated with check (created_by=(select auth.uid()) and exists (select 1 from public.teams t join public.tournaments tr on tr.id=t.tournament_id where t.id=players.team_id and (t.owner_id=(select auth.uid()) or tr.owner_id=(select auth.uid()) or exists(select 1 from public.team_members tm where tm.team_id=t.id and tm.user_id=(select auth.uid())))));
+drop policy if exists players_update on public.players;
+create policy players_update on public.players for update to authenticated using (exists (select 1 from public.teams t join public.tournaments tr on tr.id=t.tournament_id where t.id=players.team_id and (t.owner_id=(select auth.uid()) or tr.owner_id=(select auth.uid()) or exists(select 1 from public.team_members tm where tm.team_id=t.id and tm.user_id=(select auth.uid()))))) with check (exists (select 1 from public.teams t join public.tournaments tr on tr.id=t.tournament_id where t.id=players.team_id and (t.owner_id=(select auth.uid()) or tr.owner_id=(select auth.uid()) or exists(select 1 from public.team_members tm where tm.team_id=t.id and tm.user_id=(select auth.uid())))));
+grant select,insert,update,delete on public.tournaments,public.team_applications,public.teams,public.players,public.venues,public.matches to authenticated;

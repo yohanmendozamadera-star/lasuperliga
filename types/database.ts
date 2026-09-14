@@ -870,6 +870,7 @@ export type Database = {
           message: string | null
           phone: string | null
           representative_name: string
+          requested_role: string
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["application_status"]
@@ -885,6 +886,7 @@ export type Database = {
           message?: string | null
           phone?: string | null
           representative_name: string
+          requested_role?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
@@ -900,6 +902,7 @@ export type Database = {
           message?: string | null
           phone?: string | null
           representative_name?: string
+          requested_role?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
@@ -1178,6 +1181,7 @@ export type Database = {
           players_on_field: number
           qualifiers: number
           registration_fee: number
+          round_robin_legs: number
           slug: string
           start_date: string
           status: Database["public"]["Enums"]["tournament_status"]
@@ -1200,6 +1204,7 @@ export type Database = {
           players_on_field?: number
           qualifiers?: number
           registration_fee?: number
+          round_robin_legs?: number
           slug: string
           start_date: string
           status?: Database["public"]["Enums"]["tournament_status"]
@@ -1222,6 +1227,7 @@ export type Database = {
           players_on_field?: number
           qualifiers?: number
           registration_fee?: number
+          round_robin_legs?: number
           slug?: string
           start_date?: string
           status?: Database["public"]["Enums"]["tournament_status"]
