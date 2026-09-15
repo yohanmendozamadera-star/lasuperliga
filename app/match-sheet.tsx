@@ -98,11 +98,15 @@ export function MatchSheet({ id }: { id: string }) {
   const addEvent = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const selectedTeam = String(form.get("team") || "");
     const primaryPlayer = String(form.get("player") || "");
     const secondaryPlayer = String(form.get("secondary") || "");
+    const allowedPrimaryPlayers = eventType === "substitution" ? onFieldPlayers : eventPlayers;
+    if (selectedTeam !== eventTeamId || !allowedPrimaryPlayers.some(player => player.id === primaryPlayer)) return setMessage("El jugador seleccionado no pertenece a la nómina disponible de ese equipo.");
     if (eventType === "substitution" && !secondaryPlayer) return setMessage("Selecciona el jugador que va a entrar.");
     if (eventType === "substitution" && primaryPlayer === secondaryPlayer) return setMessage("El jugador que entra debe ser diferente al que sale.");
-    const { error } = await supabase!.from("match_events").insert({ match_id: id, team_id: String(form.get("team")), player_id: primaryPlayer || null, secondary_player_id: eventType === "substitution" ? secondaryPlayer : null, event_type: eventType as any, minute: Number(form.get("minute")), stoppage_minute: Number(form.get("stoppage")) || 0, notes: String(form.get("notes") || ""), recorded_by: user.id });
+    if (eventType === "substitution" && !substitutePlayers.some(player => player.id === secondaryPlayer)) return setMessage("El jugador que entra debe estar registrado como suplente disponible.");
+    const { error } = await supabase!.from("match_events").insert({ match_id: id, team_id: selectedTeam, player_id: primaryPlayer || null, secondary_player_id: eventType === "substitution" ? secondaryPlayer : null, event_type: eventType as any, minute: Number(form.get("minute")), stoppage_minute: Number(form.get("stoppage")) || 0, notes: String(form.get("notes") || ""), recorded_by: user.id });
     if (error) return setMessage(error.message);
     await syncScore(); setShowEvent(false); setMessage("Evento registrado."); await load();
   };
