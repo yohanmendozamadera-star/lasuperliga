@@ -227,6 +227,21 @@ a.primaryBtn {
 .emptyScorers { padding:48px; text-align:center; background:#fff; border:1px dashed #b9c5c0; border-radius:9px; }
 .emptyScorers>span { font-size:38px; }.emptyScorers h3 { margin:10px 0 4px; font:800 24px 'Barlow Condensed'; text-transform:uppercase; }.emptyScorers p { margin:0; color:#71807b; font-size:11px; }
 @media(max-width:800px){.publicScorers{grid-template-columns:1fr}.publicScorers article{grid-template-columns:25px 68px 1fr 55px;padding:10px}.scorerPhoto{width:60px;height:72px}.scorerIdentity{padding-left:9px}.scorerIdentity h3{font-size:18px}.scorerGoals strong{font-size:34px}}
+
+.matchMeta { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.matchMeta>span { font-size:10px; }
+.adminMatchStatus,.publicMatchStatus { display:inline-flex; align-items:center; justify-content:center; width:max-content; padding:6px 10px; border-radius:20px; background:#e8ece9; color:#596a64; font-size:8px; font-weight:900; text-transform:uppercase; white-space:nowrap; }
+.adminMatchStatus.scheduled,.publicMatchStatus.scheduled { background:#e6edf8; color:#2e5e99; }
+.adminMatchStatus.lineup_open,.publicMatchStatus.lineup_open { background:#fff0d7; color:#95600a; }
+.adminMatchStatus.in_progress,.publicMatchStatus.in_progress { background:#c8f23d; color:#07513f; }
+.adminMatchStatus.finished,.publicMatchStatus.finished { background:#07513f; color:#fff; }
+.adminMatchStatus.postponed,.publicMatchStatus.postponed { background:#ffe5c8; color:#a3570b; }
+.adminMatchStatus.cancelled,.publicMatchStatus.cancelled { background:#f7dfdb; color:#a83d2b; }
+.keeperCrest { align-self:center; height:72px; border-radius:50%; background:#f0f3ef; }
+.keeperCrest img { object-fit:contain; padding:6px; }
+.keeperGoals { width:70px; }.keeperGoals span { display:block; line-height:1.25; }
+.goalkeeperSection { max-width:none; }.goalkeeperSection>p,.goalkeeperSection>h2,.goalkeeperRanking,.goalkeeperSection>.emptyScorers { max-width:1100px; margin-left:auto; margin-right:auto; }
+@media(max-width:800px){.matchMeta{align-items:flex-start}.publicMatchStatus{margin-top:5px}.keeperGoals{width:54px}}
 .matchEditor { width:min(680px,92vw); }
 .colorPanel button { align-self:end; padding:10px 12px; border:0; border-radius:5px; background:#073f32; color:#fff; font-weight:800; }
 @media(max-width:700px){.uniformFields{display:block}.uniformPreview{margin:auto}.colorPanel{justify-content:center;flex-wrap:wrap}.playersHeading,.playerCards>article{align-items:stretch;flex-direction:column}.playersHeading>div:last-child,.playerActions{flex-wrap:wrap}.teamSummary{padding:20px}.teamProfileGrid,.playersPanel{padding:16px!important}}
