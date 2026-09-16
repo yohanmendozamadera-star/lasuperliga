@@ -117,6 +117,7 @@ export function TeamHub({ id }: { id: string }) {
       team_id: id,
       created_by: user.id,
       full_name: String(form.get("name")),
+      document_number: String(form.get("documentNumber") || "").replace(/\D/g, "") || null,
       birth_date: String(form.get("birthDate") || "") || null,
       jersey_number: Number(form.get("number")),
       position: String(form.get("position")),
@@ -161,17 +162,19 @@ export function TeamHub({ id }: { id: string }) {
     const numberIndex = headers.findIndex(x => ["numero", "numero de camiseta", "number", "dorsal"].includes(x));
     const positionIndex = headers.findIndex(x => ["posicion", "position"].includes(x));
     const birthDateIndex = headers.findIndex(x => ["fecha de nacimiento", "fecha nacimiento", "fecha_nacimiento", "nacimiento", "birth_date"].includes(x));
-    if (nameIndex < 0 || numberIndex < 0) return setMessage("El Excel debe conservar las columnas Nombre completo y Número de camiseta.");
+    const documentIndex = headers.findIndex(x => ["cedula", "cedula del jugador", "numero de cedula", "documento", "numero de documento", "document_number"].includes(x));
+    if (nameIndex < 0 || numberIndex < 0 || documentIndex < 0) return setMessage("El Excel debe conservar las columnas Nombre completo, Número de cédula y Número de camiseta.");
     const rows: any[] = [];
     sheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1 || rows.length >= 200) return;
       const values = (row.values as any[]).slice(1);
       const fullName = cellText(values[nameIndex]);
       const jerseyNumber = Number(cellText(values[numberIndex]));
-      if (!fullName || !jerseyNumber) return;
+      const documentNumber = cellText(values[documentIndex]).replace(/\D/g, "");
+      if (!fullName || !jerseyNumber || !documentNumber) return;
       const rawBirthDate = birthDateIndex >= 0 ? values[birthDateIndex] : null;
       const birthDate = rawBirthDate instanceof Date ? rawBirthDate.toISOString().slice(0, 10) : cellText(rawBirthDate) || null;
-      rows.push({ team_id: id, created_by: user.id, full_name: fullName, birth_date: birthDate, jersey_number: jerseyNumber, position: positionIndex >= 0 ? cellText(values[positionIndex]) || "Por definir" : "Por definir" });
+      rows.push({ team_id: id, created_by: user.id, full_name: fullName, document_number: documentNumber, birth_date: birthDate, jersey_number: jerseyNumber, position: positionIndex >= 0 ? cellText(values[positionIndex]) || "Por definir" : "Por definir" });
     });
     if (!rows.length) return setMessage("No encontramos jugadores válidos en el archivo.");
     const { error } = await supabase!.from("players").upsert(rows, { onConflict: "team_id,jersey_number" });
@@ -185,6 +188,7 @@ export function TeamHub({ id }: { id: string }) {
     const form = new FormData(event.currentTarget);
     const { error } = await supabase!.from("players").update({
       full_name: String(form.get("name") || "").trim(),
+      document_number: String(form.get("documentNumber") || "").replace(/\D/g, "") || null,
       birth_date: String(form.get("birthDate") || "") || null,
       jersey_number: Number(form.get("number")),
       position: String(form.get("position")),
@@ -249,10 +253,10 @@ export function TeamHub({ id }: { id: string }) {
 
     {tab === "players" && <section className="playersPanel">
       <div className="playersHeading"><div><span className="sectionLabel">PLANTILLA</span><h2>Jugadores del equipo</h2><p>{players.length} jugador{players.length === 1 ? "" : "es"} registrado{players.length === 1 ? "" : "s"}</p></div><div><button className="outlineBtn" onClick={() => setShowImport(true)}>Importar lista</button><button className="primaryBtn" onClick={() => setShowPlayerForm(true)}>+ Agregar jugador</button></div></div>
-      <div className="playerCards">{players.length ? players.map(player => <article key={player.id}><div className="playerIdentity">{player.photo_preview ? <img src={player.photo_preview} alt={player.full_name}/> : <span>{player.full_name.slice(0,1).toUpperCase()}</span>}<div><b>#{player.jersey_number} · {player.full_name}</b><small>{player.position || "Sin posición"}{playerAge(player.birth_date) !== null ? ` · ${playerAge(player.birth_date)} años` : " · Edad por definir"}</small></div></div><div className="playerActions"><label>{player.photo_url ? "Cambiar foto" : "Subir foto"}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { const file=event.target.files?.[0]; if(file) void uploadPlayerPhoto(player.id,file); }}/></label><button onClick={() => setEditingPlayer(player)}>Editar</button><button onClick={async()=>{if(confirm("¿Eliminar este jugador?")){await supabase!.from("players").delete().eq("id",player.id);await load();}}}>Eliminar</button></div></article>) : <div className="emptyPlayers"><b>11</b><h3>Aún no hay jugadores</h3><p>Registra uno por uno o importa la plantilla completa.</p><button className="primaryBtn" onClick={() => setShowPlayerForm(true)}>Agregar primer jugador</button></div>}</div>
+      <div className="playerCards">{players.length ? players.map(player => <article key={player.id}><div className="playerIdentity">{player.photo_preview ? <img src={player.photo_preview} alt={player.full_name}/> : <span>{player.full_name.slice(0,1).toUpperCase()}</span>}<div><b>#{player.jersey_number} · {player.full_name}</b><small>{player.position || "Sin posición"}{playerAge(player.birth_date) !== null ? ` · ${playerAge(player.birth_date)} años` : " · Edad por definir"}{player.document_number ? ` · C.C. ${player.document_number}` : ""}</small></div></div><div className="playerActions"><label>{player.photo_url ? "Cambiar foto" : "Subir foto"}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { const file=event.target.files?.[0]; if(file) void uploadPlayerPhoto(player.id,file); }}/></label><button onClick={() => setEditingPlayer(player)}>Editar</button><button onClick={async()=>{if(confirm("¿Eliminar este jugador?")){await supabase!.from("players").delete().eq("id",player.id);await load();}}}>Eliminar</button></div></article>) : <div className="emptyPlayers"><b>11</b><h3>Aún no hay jugadores</h3><p>Registra uno por uno o importa la plantilla completa.</p><button className="primaryBtn" onClick={() => setShowPlayerForm(true)}>Agregar primer jugador</button></div>}</div>
     </section>}
 
-    {(showPlayerForm || editingPlayer) && <div className="createOverlay"><form className="createTournament" onSubmit={editingPlayer ? updatePlayer : addPlayer}><button type="button" className="modalClose" onClick={() => {setShowPlayerForm(false);setEditingPlayer(null);}}>×</button><p className="sectionLabel">{editingPlayer ? "EDITAR" : "NUEVO"} JUGADOR</p><h2>{editingPlayer ? "Editar jugador" : "Agregar jugador"}</h2><label>Nombre completo<input name="name" defaultValue={editingPlayer?.full_name || ""} required /></label><div className="formPair"><label>Fecha de nacimiento<input name="birthDate" type="date" defaultValue={editingPlayer?.birth_date || ""} /></label><label>Número de camiseta<input name="number" type="number" min="1" max="99" defaultValue={editingPlayer?.jersey_number || ""} required /></label></div><label>Posición<select name="position" defaultValue={editingPlayer?.position || "Delantero"}><option>Arquero</option><option>Defensa</option><option>Volante</option><option>Delantero</option></select></label>{!editingPlayer && <label>Foto (puedes cargarla después)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>}<button className="primaryBtn wide">{editingPlayer ? "Guardar jugador" : "Agregar jugador"}</button></form></div>}
+    {(showPlayerForm || editingPlayer) && <div className="createOverlay"><form className="createTournament" onSubmit={editingPlayer ? updatePlayer : addPlayer}><button type="button" className="modalClose" onClick={() => {setShowPlayerForm(false);setEditingPlayer(null);}}>×</button><p className="sectionLabel">{editingPlayer ? "EDITAR" : "NUEVO"} JUGADOR</p><h2>{editingPlayer ? "Editar jugador" : "Agregar jugador"}</h2><label>Nombre completo<input name="name" defaultValue={editingPlayer?.full_name || ""} required /></label><label>Número de cédula<input name="documentNumber" type="text" inputMode="numeric" pattern="[0-9. -]*" maxLength={20} defaultValue={editingPlayer?.document_number || ""} placeholder="Ejemplo: 1045678901" required/><small className="fieldHelp">Los puntos y espacios se eliminan al guardar.</small></label><div className="formPair"><label>Fecha de nacimiento<input name="birthDate" type="date" defaultValue={editingPlayer?.birth_date || ""} /></label><label>Número de camiseta<input name="number" type="number" min="1" max="99" defaultValue={editingPlayer?.jersey_number || ""} required /></label></div><label>Posición<select name="position" defaultValue={editingPlayer?.position || "Delantero"}><option>Arquero</option><option>Defensa</option><option>Volante</option><option>Delantero</option></select></label>{!editingPlayer && <label>Foto (puedes cargarla después)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>}<button className="primaryBtn wide">{editingPlayer ? "Guardar jugador" : "Agregar jugador"}</button></form></div>}
     {showImport && <div className="createOverlay"><div className="createTournament"><button type="button" className="modalClose" onClick={() => setShowImport(false)}>×</button><p className="sectionLabel">IMPORTACIÓN</p><h2>Importar jugadores desde Excel</h2><p>Descarga el archivo de muestra, reemplaza los ejemplos con tus jugadores y luego súbelo aquí. Puedes importar hasta 200 jugadores.</p><a className="outlineBtn templateDownload" href="/plantilla-jugadores.xlsx" download>Descargar archivo de muestra</a><label className="csvDrop">Seleccionar archivo de Excel<input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={async event => {await importPlayers(event);setShowImport(false);}} /></label></div></div>}
   </main>;
 }
