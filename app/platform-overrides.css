@@ -246,3 +246,74 @@ a.primaryBtn {
 .colorPanel button { align-self:end; padding:10px 12px; border:0; border-radius:5px; background:#073f32; color:#fff; font-weight:800; }
 @media(max-width:700px){.uniformFields{display:block}.uniformPreview{margin:auto}.colorPanel{justify-content:center;flex-wrap:wrap}.playersHeading,.playerCards>article{align-items:stretch;flex-direction:column}.playersHeading>div:last-child,.playerActions{flex-wrap:wrap}.teamSummary{padding:20px}.teamProfileGrid,.playersPanel{padding:16px!important}}
 @media(max-width:800px){.tAdmin>header,.teamHub>header,.adminGrid,.adminForm.horizontal{display:flex;flex-direction:column;align-items:stretch}.tAdmin>nav{overflow:auto}.adminRow{align-items:flex-start;flex-wrap:wrap}.calendarActions{align-items:stretch;flex-direction:column}}
+
+/* Feedback táctil y accesible para las acciones de toda la plataforma. */
+button,.primaryBtn,.teamEditButton,.leagueActions a,.templateDownload {
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease, background-color .12s ease;
+}
+button:not(:disabled):hover,.primaryBtn:hover,.teamEditButton:hover { filter: brightness(.96); }
+button:not(:disabled):active,.primaryBtn:active,.teamEditButton:active,.leagueActions a:active,.templateDownload:active {
+  transform: translateY(2px) scale(.975);
+  box-shadow: inset 0 3px 7px #052d2440!important;
+  filter: brightness(.9);
+}
+button:focus-visible,.primaryBtn:focus-visible,.teamEditButton:focus-visible,a:focus-visible {
+  outline: 3px solid #b8ed24;
+  outline-offset: 3px;
+}
+button:disabled { cursor:not-allowed; opacity:.5; }
+
+/* Clasificación: lectura inmediata de quién avanza y quién queda eliminado. */
+.portalTable tr.qualifiedRow { background:#f4faeb; }
+.portalTable tr.eliminatedRow { background:#fff0ed; color:#704a43; }
+.portalTable tr.qualifiedRow td:first-child { border-left:5px solid #80b827; }
+.portalTable tr.eliminatedRow td:first-child { border-left:5px solid #e56a50; }
+.standingsLegend { display:flex; flex-wrap:wrap; gap:18px; max-width:1100px; margin:14px auto 0; color:#66766f; font-size:10px; font-weight:800; }
+.standingsLegend span { display:flex; align-items:center; gap:7px; }
+.standingsLegend i { width:13px; height:13px; border-radius:3px; }
+.qualifiedSwatch { background:#80b827; }.eliminatedSwatch { background:#e56a50; }
+
+/* Configuración de la fase eliminatoria. */
+.knockoutManager { display:grid; gap:22px; }
+.knockoutManager>header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; }
+.knockoutManager h2 { margin:4px 0 5px; font-size:38px; }
+.knockoutManager header span { color:#687771; font-size:11px; }
+.knockoutManager header>b { padding:8px 12px; border-radius:99px; font-size:9px; text-transform:uppercase; }
+.knockoutManager header>b.available { background:#dff4d0; color:#2c6810; }
+.knockoutManager header>b.waiting { background:#fff0c8; color:#765800; }
+.knockoutExplainer { display:flex; align-items:center; justify-content:center; gap:18px; padding:18px; border-radius:8px; background:#073f32; color:#fff; }
+.knockoutExplainer span { color:#c5f43d; font-size:25px; }
+.knockoutWarning { padding:13px 15px; border-radius:6px; background:#ffe1da; color:#8e321f; font-size:11px; font-weight:700; }
+.bracketModes { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.bracketModes button { padding:15px; border:1px solid #c8d2cb; border-radius:8px; background:#fff; color:#173c34; font-weight:900; }
+.bracketModes button small { display:block; margin-top:5px; color:#718079; font-weight:500; }
+.bracketModes button.active { border-color:#073f32; background:#eaf7bf; box-shadow:inset 0 0 0 2px #073f32; }
+.bracketPreview { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.bracketPreview article { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; padding:16px; border:1px solid #d6ded8; border-radius:8px; background:#f8f9f5; }
+.bracketPreview article em { grid-column:1/-1; color:#e7542f; font-size:9px; font-style:normal; font-weight:900; letter-spacing:1px; }
+.bracketPreview article span:last-child { text-align:right; }
+.bracketPreview select { width:100%; padding:10px; border:1px solid #c8d1cb; border-radius:5px; background:#fff; }
+.knockoutSchedule { display:grid; grid-template-columns:1fr 1fr auto; align-items:end; gap:12px; padding:18px; border-radius:8px; background:#eef1e9; }
+.knockoutSchedule label { display:grid; gap:7px; font-size:10px; font-weight:900; }
+.knockoutSchedule input,.knockoutSchedule select { width:100%; padding:11px; border:1px solid #c5cfc8; border-radius:5px; background:#fff; }
+.knockoutReady { display:flex; align-items:center; gap:15px; padding:24px; border-radius:9px; background:#e8f8d9; }
+.knockoutReady>span { display:grid; place-items:center; width:42px; height:42px; border-radius:50%; background:#679b19; color:#fff; font-size:22px; }
+.knockoutReady p { margin:5px 0 0; color:#52664b; font-size:11px; }
+
+/* Llaves visibles para jugadores y público. */
+.publicKnockout { max-width:none; background:linear-gradient(135deg,#062f27,#0a5947); color:#fff; }
+.publicKnockout>p,.publicKnockout>h2,.publicBracket { max-width:1100px; margin-left:auto; margin-right:auto; }
+.publicBracket { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.publicBracket article { padding:18px; border:1px solid #ffffff25; border-radius:9px; background:#ffffff0d; }
+.publicBracket article>small { color:#c5f43d; font-size:9px; font-weight:900; letter-spacing:1px; text-transform:uppercase; }
+.publicBracket article>div { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; margin:16px 0; }
+.publicBracket article>div>span { display:flex; align-items:center; gap:8px; font-weight:900; }
+.publicBracket article>div>span:last-child { justify-content:flex-end; text-align:right; }
+.publicBracket img { width:38px; height:38px; object-fit:contain; border-radius:50%; background:#fff; }
+.publicBracket em { color:#b6cec6; font-size:10px; font-style:normal; }
+
+@media(max-width:760px){
+  .knockoutManager>header,.knockoutSchedule{display:flex;align-items:stretch;flex-direction:column}
+  .bracketModes,.bracketPreview,.publicBracket{grid-template-columns:1fr}
+  .knockoutExplainer{gap:8px;font-size:11px}
+}
