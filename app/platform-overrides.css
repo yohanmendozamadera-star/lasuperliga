@@ -317,3 +317,25 @@ button:disabled { cursor:not-allowed; opacity:.5; }
   .bracketModes,.bracketPreview,.publicBracket{grid-template-columns:1fr}
   .knockoutExplainer{gap:8px;font-size:11px}
 }
+
+/* Logo y publicación del torneo. */
+.realTournamentGrid article { position:relative; overflow:hidden; }
+.tournamentCardLogo { height:135px; margin:-24px -24px 18px; display:grid; place-items:center; overflow:hidden; background:linear-gradient(135deg,#063a2f,#0a604b); }
+.tournamentCardLogo img { width:100%; height:100%; object-fit:contain; padding:18px; }
+.realTournamentGrid article.inactiveTournament { background:#f4f4f1; opacity:.82; }
+.realTournamentGrid article.inactiveTournament .tournamentCardLogo { filter:grayscale(1); }
+.tournamentState.inactive { background:#e0e3e1; color:#59645f; }
+.tournamentLogoField { padding:15px; border:2px dashed #aab9b0; border-radius:8px; background:#f7f9f5; cursor:pointer; }
+.tournamentLogoField input { padding:8px 0; border:0; background:transparent; }
+.tournamentLogoField span { font-weight:900; }
+.tournamentLogoField small { color:#718079; font-weight:500; }
+.tournamentLogoEditor { display:flex; align-items:center; gap:18px; padding:16px; border:1px solid #ced8d1; border-radius:9px; background:#fff; }
+.tournamentLogoEditor>img { width:110px; height:90px; object-fit:contain; border-radius:8px; background:#073f32; padding:9px; }
+.tournamentLogoEditor label { flex:1; }
+.tournamentLogoEditor input { padding:9px 0; border:0; }
+.tournamentLogoEditor small { color:#6c7974; font-weight:500; }
+.publicVisibility { display:flex!important; grid-template-columns:none!important; align-items:flex-start; gap:12px!important; padding:16px; border:1px solid #cbd5ce; border-radius:8px; background:#fff; }
+.publicVisibility>input { width:20px!important; height:20px; margin-top:2px; accent-color:#07513f; }
+.publicVisibility>span { display:grid; gap:4px; }
+.publicVisibility small { color:#6c7974; font-weight:500; }
+@media(max-width:600px){.tournamentLogoEditor{align-items:stretch;flex-direction:column}.tournamentLogoEditor>img{width:100%;height:140px}}
