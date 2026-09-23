@@ -51,6 +51,7 @@ export function TeamHub({ id }: { id: string }) {
         .order("jersey_number");
       const withPhotos = await Promise.all((data ?? []).map(async (player: any) => {
         if (!player.photo_url) return player;
+        if (/^https?:\/\//i.test(player.photo_url)) return { ...player, photo_preview: player.photo_url };
         const { data: signed } = await supabase!.storage.from("player-photos").createSignedUrl(player.photo_url, 3600);
         return { ...player, photo_preview: signed?.signedUrl || null };
       }));
