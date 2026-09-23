@@ -372,3 +372,45 @@ button:disabled { cursor:not-allowed; opacity:.5; }
   .bracketTree,.bracketTree.rounds-1,.bracketTree.rounds-2,.bracketTree.rounds-3,.bracketTree.rounds-4{display:flex;align-items:stretch;gap:22px}
   .bracketRound{min-width:250px}.bracketRoundMatches{height:560px}.bracketChampion{min-width:140px}.bracketIntro{margin-top:-10px}
 }
+
+/* Portada del torneo: publicidad rotativa y contenido por pestañas. */
+.publicPortal>header { justify-content:space-between; }
+.dynamicHero { position:relative; min-height:500px; isolation:isolate; background-position:center; background-size:cover; transition:background-image .45s ease; }
+.heroTournamentContent { position:relative; z-index:2; max-width:920px; }
+.heroAdLink { display:inline-flex; margin-left:12px; padding:14px 18px; border:1px solid #ffffff80; border-radius:6px; color:#fff; font-size:11px; font-weight:900; text-decoration:none; backdrop-filter:blur(5px); }
+.carouselArrow { position:absolute; z-index:3; top:50%; display:grid; place-items:center; width:44px; height:54px; border:1px solid #ffffff55; border-radius:7px; background:#032d2588; color:#fff; font-size:34px; transform:translateY(-50%); }
+.carouselArrow.previous { left:18px; }.carouselArrow.next { right:18px; }
+.carouselDots { position:absolute; z-index:3; left:50%; bottom:22px; display:flex; gap:7px; transform:translateX(-50%); }
+.carouselDots button { width:9px; height:9px; padding:0; border:1px solid #fff; border-radius:50%; background:#ffffff55; }
+.carouselDots button.active { width:27px; border-radius:99px; background:#c8f23d; border-color:#c8f23d; }
+.portalTabs { position:sticky; z-index:35; top:78px; display:flex; justify-content:center; gap:5px; padding:9px max(5vw,18px); overflow-x:auto; background:#fff; border-bottom:1px solid #d9e0da; box-shadow:0 8px 24px #0b352b12; }
+.portalTabs button { flex:0 0 auto; padding:12px 18px; border:0; border-radius:6px; background:transparent; color:#53645f; font-size:11px; font-weight:900; }
+.portalTabs button.active { background:#073f32; color:#fff; box-shadow:0 5px 14px #062e2630; }
+.portalActiveSection { min-height:580px; animation:portalSectionIn .28s ease both; }
+@keyframes portalSectionIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.publicMatch { position:relative; }
+.publicMatch.featuredMatch { margin-bottom:22px; border:2px solid #8fbe24; box-shadow:0 12px 30px #173c3420; }
+.nearestMatchLabel { position:absolute; top:-12px; left:18px; padding:5px 9px; border-radius:99px; background:#c8f23d; color:#073f32; font-size:8px; letter-spacing:1px; }
+
+/* Administración de publicidad. */
+.advertisingPage .advertisingAdmin { max-width:1280px; margin:24px auto 0; }
+.advertisingIntro { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:24px; }
+.advertisingIntro h2 { margin:5px 0 8px; font-size:42px; }
+.advertisingIntro p:last-child { max-width:690px; color:#64736d; line-height:1.6; }
+.advertisingLayout { display:grid; grid-template-columns:360px 1fr; gap:22px; align-items:start; }
+.advertisingLayout .adminForm h3 { margin:0; font:900 27px "Barlow Condensed",sans-serif; text-transform:uppercase; }
+.advertisingLayout .adminForm small { color:#68766f; font-weight:500; }
+.advertisingList { display:grid; gap:12px; }
+.advertisingList article { display:grid; grid-template-columns:170px 1fr auto auto; align-items:center; gap:14px; padding:12px; border:1px solid #d7ded8; border-radius:9px; background:#fff; }
+.advertisingList article>img { width:170px; height:82px; object-fit:cover; border-radius:6px; background:#073f32; }
+.advertisingList article>div { display:grid; gap:5px; }
+.advertisingList article small { color:#718079; }
+.advertisingList article>button { padding:9px 11px; border:1px solid #b9c7c0; border-radius:5px; background:#fff; color:#07513f; font-size:10px; font-weight:800; }
+.advertisingList article>button.dangerButton { color:#a23c28; border-color:#e1b9b0; }
+.advertisingList article.pausedAd { opacity:.58; filter:grayscale(.65); }
+.emptyAdvertising { padding:60px 25px; border:2px dashed #c3cec7; border-radius:10px; background:#f8f9f5; text-align:center; }
+.emptyAdvertising span { font-size:42px; }.emptyAdvertising h3 { margin:10px 0 5px; font:900 28px "Barlow Condensed",sans-serif; text-transform:uppercase; }.emptyAdvertising p { color:#718079; }
+@media(max-width:800px){
+ .dynamicHero{min-height:520px;padding-left:28px;padding-right:28px}.carouselArrow{top:auto;bottom:12px;transform:none}.carouselArrow.previous{left:18px}.carouselArrow.next{right:18px}
+ .portalTabs{justify-content:flex-start}.heroAdLink{margin:10px 0 0}.advertisingLayout{grid-template-columns:1fr}.advertisingList article{grid-template-columns:90px 1fr}.advertisingList article>img{width:90px;height:68px}.advertisingList article>button{grid-row:2}.publicMatch.featuredMatch{padding-top:28px}
+}

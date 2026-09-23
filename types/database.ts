@@ -52,6 +52,56 @@ export type Database = {
           },
         ]
       }
+      tournament_ads: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          display_order: number
+          id: string
+          image_url: string
+          link_url: string | null
+          storage_path: string
+          title: string | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          display_order?: number
+          id?: string
+          image_url: string
+          link_url?: string | null
+          storage_path: string
+          title?: string | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          link_url?: string | null
+          storage_path?: string
+          title?: string | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_ads_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_teams: {
         Row: {
           group_id: string
